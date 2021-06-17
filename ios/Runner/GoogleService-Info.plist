@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>153025557566-e9u79abqaav5p15tpasqeih9u0pbhv08.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.153025557566-e9u79abqaav5p15tpasqeih9u0pbhv08</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAqYiwKa3IyZVWLo0-5zAF_6ySpsgE6XB8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>153025557566</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.olx</string>
+	<key>PROJECT_ID</key>
+	<string>olxproject-5799b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>olxproject-5799b.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:153025557566:ios:34b09a58b4a716a96acd6f</string>
+</dict>
+</plist>
