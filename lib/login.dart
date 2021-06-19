@@ -101,14 +101,14 @@ class _LoginState extends State<Login> {
                   controller: _controllerEmail,
                   hint: 'Email',
                   obscure: false,
-                  type: TextInputType.emailAddress,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 InputCustomizado(
                   autoFocus: false,
                   controller: _controllerPassword,
                   hint: 'Password',
                   obscure: true,
-                  type: TextInputType.text,
+                  keyboardType: TextInputType.text,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

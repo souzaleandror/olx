@@ -1,26 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class InputCustomizado extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final bool autoFocus;
   final bool obscure;
-  final TextInputType type;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter> inputFormatters;
+  final int maxLines;
+  final Function(String) validator;
+  final Function(String) onSaved;
 
-  InputCustomizado(
-      {@required this.controller,
-      @required this.hint,
-      this.obscure = false,
-      this.autoFocus = false,
-      this.type = TextInputType.text});
+  InputCustomizado({
+    @required this.controller,
+    @required this.hint,
+    this.obscure = false,
+    this.autoFocus = false,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
+    this.maxLines,
+    this.validator,
+    this.onSaved,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      onSaved: onSaved,
       autofocus: autoFocus,
       controller: controller,
       obscureText: obscure,
-      keyboardType: type,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLines: maxLines,
+      validator: validator,
       style: TextStyle(
         fontSize: 20,
       ),

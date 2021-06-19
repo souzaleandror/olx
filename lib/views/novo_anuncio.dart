@@ -1,7 +1,15 @@
 import 'dart:io';
 
+import 'package:brasil_fields/brasil_fields.dart';
+import 'package:brasil_fields/modelos/estados.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:olx/models/anuncio.dart';
 import 'package:olx/views/widget/botao_customizado.dart';
+import 'package:olx/views/widget/input_costumizado.dart';
+import 'package:validadores/Validador.dart';
 
 class NovoAnuncio extends StatefulWidget {
   @override
@@ -11,7 +19,101 @@ class NovoAnuncio extends StatefulWidget {
 class _NovoAnuncioState extends State<NovoAnuncio> {
   final _formKey = GlobalKey<FormState>();
 
+  Anuncio _anuncio;
+
   List<File> _listaImagens = [];
+  List<DropdownMenuItem<String>> _listaItensDropEstados = List();
+  List<DropdownMenuItem<String>> _listaItensDropCategorias = List();
+
+  String _itemSelecionadoEstado;
+  String _itemSelecionadoCategoria;
+
+  void _selecionarImagemNaGaleria() async {
+    File imagemSelecionada =
+        await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    if (imagemSelecionada != null) {
+      setState(() {
+        _listaImagens.add(imagemSelecionada);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _anuncio = Anuncio();
+    _carregarItensDropDown();
+  }
+
+  _carregarItensDropDown() async {
+    for (var estado in Estados.listaEstadosAbrv) {
+      _listaItensDropEstados.add(
+        DropdownMenuItem(
+          child: Text(estado),
+          value: estado,
+        ),
+      );
+    }
+
+    _listaItensDropCategorias.add(
+      DropdownMenuItem(
+        child: Text('Automovel'),
+        value: 'auto',
+      ),
+    );
+    _listaItensDropCategorias.add(
+      DropdownMenuItem(
+        child: Text('Imovel'),
+        value: 'imovel',
+      ),
+    );
+    _listaItensDropCategorias.add(
+      DropdownMenuItem(
+        child: Text('Moda'),
+        value: 'moda',
+      ),
+    );
+    _listaItensDropCategorias.add(
+      DropdownMenuItem(
+        child: Text('Eletronico'),
+        value: 'eletronico',
+      ),
+    );
+    _listaItensDropCategorias.add(
+      DropdownMenuItem(
+        child: Text('Sport'),
+        value: 'sport',
+      ),
+    );
+  }
+
+  void _salvarAnuncio() async {
+    //Upload das imagens no Storage
+    _uploadImagens();
+
+    //Salvar anuncio no Firestore
+  }
+
+  Future _uploadImagens() async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+    StorageReference pastaRaiz = storage.ref();
+
+    for (var imagem in _listaImagens) {
+      print('imagem: $imagem');
+      print('imagem path: ${imagem.path}');
+      String nomeImage = DateTime.now().millisecondsSinceEpoch.toString();
+      StorageReference arquivo =
+          pastaRaiz.child('meus_anuncios').child(_anuncio.id).child(nomeImage);
+
+      StorageUploadTask uploadTask = arquivo.putFile(imagem);
+      StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+      String url = await taskSnapshot.ref.getDownloadURL();
+      _anuncio.fotos.add(url);
+
+      print('URL: $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +180,51 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                                   ),
                                 );
                               }
-                              if (_listaImagens.length > 0) {}
+                              if (_listaImagens.length > 0) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => Dialog(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Image.file(_listaImagens[indice]),
+                                              FlatButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _listaImagens
+                                                        .removeAt(indice);
+                                                    Navigator.of(context).pop();
+                                                  });
+                                                },
+                                                child: Text('Excluir'),
+                                                textColor: Colors.red,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: CircleAvatar(
+                                      radius: 50,
+                                      backgroundImage:
+                                          FileImage(_listaImagens[indice]),
+                                      child: Container(
+                                        color:
+                                            Color.fromRGBO(255, 255, 255, 0.4),
+                                        alignment: Alignment.center,
+                                        child: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
 
                               return Container();
                             },
@@ -101,18 +247,155 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                 //Menus Dropdown
                 Row(
                   children: [
-                    Text('Estado'),
-                    Text('Categoria'),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: DropdownButtonFormField(
+                            onSaved: (estado) {
+                              _anuncio.estado = estado;
+                            },
+                            validator: (valor) {
+                              return Validador()
+                                  .add(Validar.OBRIGATORIO,
+                                      msg: 'Campo Obrigatorio')
+                                  .valido(valor);
+                            },
+                            value: 'SP',
+                            hint: Text(
+                              'Estados',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                              ),
+                            ),
+                            items: _listaItensDropEstados,
+                            onChanged: (value) {
+                              print("Valor drop: $value");
+                              setState(() {
+                                _itemSelecionadoEstado = value;
+                              });
+                            }),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: DropdownButtonFormField(
+                            onSaved: (categoria) {
+                              _anuncio.categoria = categoria;
+                            },
+                            validator: (valor) {
+                              return Validador()
+                                  .add(Validar.OBRIGATORIO,
+                                      msg: 'Campo Obrigatorio')
+                                  .valido(valor);
+                            },
+                            hint: Text(
+                              'Categorias',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                              ),
+                            ),
+                            items: _listaItensDropCategorias,
+                            onChanged: (value) {
+                              print("Valor drop: $value");
+                              setState(() {
+                                _itemSelecionadoCategoria = value;
+                              });
+                            }),
+                      ),
+                    ),
                   ],
                 ),
 
                 //Caixnas de textos e botoes
-                Text('Caixas de textos'),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15, top: 15),
+                  child: InputCustomizado(
+                    controller: null,
+                    onSaved: (titulo) {
+                      _anuncio.titulo = titulo;
+                    },
+                    hint: 'Titulo',
+                    validator: (valor) {
+                      return Validador()
+                          .add(Validar.OBRIGATORIO, msg: 'Campo Obrigatorio')
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15),
+                  child: InputCustomizado(
+                    onSaved: (preco) {
+                      _anuncio.preco = preco;
+                    },
+                    controller: null,
+                    hint: 'Preco',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      RealInputFormatter(centavos: true),
+                    ],
+                    validator: (valor) {
+                      return Validador()
+                          .add(Validar.OBRIGATORIO, msg: 'Campo Obrigatorio')
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15),
+                  child: InputCustomizado(
+                    onSaved: (telefone) {
+                      _anuncio.telefone = telefone;
+                    },
+                    controller: null,
+                    hint: 'Telefone',
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      TelefoneInputFormatter(),
+                    ],
+                    validator: (valor) {
+                      return Validador()
+                          .add(Validar.OBRIGATORIO, msg: 'Campo Obrigatorio')
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15),
+                  child: InputCustomizado(
+                    onSaved: (descricao) {
+                      _anuncio.descricao = descricao;
+                    },
+                    controller: null,
+                    hint: 'Descricao',
+                    maxLines: 5,
+                    validator: (valor) {
+                      return Validador()
+                          .add(Validar.OBRIGATORIO, msg: 'Campo Obrigatorio')
+                          .maxLength(200, msg: "Maximo de 200 caracteres")
+                          .minLength(5, msg: 'Descricao min 5 caracteres')
+                          .valido(valor);
+                    },
+                  ),
+                ),
 
                 BotaoCustomizado(
                   texto: 'Novo Anuncio',
                   onPressed: () {
                     _formKey.currentState.validate();
+
+                    _formKey.currentState.save();
+
+                    //Salvar Anuncio
+                    _salvarAnuncio();
                   },
                 ),
               ],
@@ -122,6 +405,4 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
       ),
     );
   }
-
-  void _selecionarImagemNaGaleria() {}
 }
