@@ -107,6 +107,7 @@ class _LoginState extends State<Login> {
                   autoFocus: false,
                   controller: _controllerPassword,
                   hint: 'Password',
+                  maxLines: 1,
                   obscure: true,
                   keyboardType: TextInputType.text,
                 ),

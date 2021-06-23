@@ -47,5 +47,10 @@
 	<string>describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>describe why your app needs access to the microphone, if you intend to record videos. This is called Privacy - Microphone Usage Description in the visual editor.</string>
+	<key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>https</string>
+      <string>http</string>
+    </array>
 </dict>
 </plist>

@@ -351,6 +351,8 @@ PODS:
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
   - PromisesObjC (1.2.12)
+  - url_launcher (0.0.1):
+    - Flutter
   - validadores (0.0.1):
     - Flutter
 
@@ -361,6 +363,7 @@ DEPENDENCIES:
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
+  - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - validadores (from `.symlinks/plugins/validadores/ios`)
 
 SPEC REPOS:
@@ -398,6 +401,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   image_picker:
     :path: ".symlinks/plugins/image_picker/ios"
+  url_launcher:
+    :path: ".symlinks/plugins/url_launcher/ios"
   validadores:
     :path: ".symlinks/plugins/validadores/ios"
 
@@ -427,6 +432,7 @@ SPEC CHECKSUMS:
   leveldb-library: 50c7b45cbd7bf543c81a468fe557a16ae3db8729
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
+  url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
   validadores: 206300a4c79554790e2fc64e10917fe7db87dce1
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c

@@ -10,11 +10,38 @@ class Anuncio {
   String _descricao;
   List<String> _fotos;
 
-  Anuncio() {
+  Anuncio();
+
+  Anuncio.fromDocumentSnapshot(DocumentSnapshot doc) {
+    this.id = doc.documentID;
+    this.estado = doc.data['estado'];
+    this.categoria = doc.data['categoria'];
+    this.titulo = doc.data['titulo'];
+    this.preco = doc.data['preco'];
+    this.telefone = doc.data['telefone'];
+    this.descricao = doc.data['descricao'];
+    this.fotos = List<String>.from(doc.data['fotos']);
+  }
+
+  Anuncio.gerarId() {
     Firestore db = Firestore.instance;
     CollectionReference anuncios = db.collection('meuns_anuncios');
     this.id = anuncios.document().documentID;
     this.fotos = [];
+  }
+
+  Map<String, dynamic> toMap() {
+    // ignore: unnecessary_cast
+    return {
+      'id': this.id,
+      'estado': this.estado,
+      'categoria': this.categoria,
+      'titulo': this.titulo,
+      'preco': this.preco,
+      'telefone': this.telefone,
+      'descricao': this.descricao,
+      'fotos': this.fotos,
+    } as Map<String, dynamic>;
   }
 
   List<String> get fotos => _fotos;

@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:brasil_fields/brasil_fields.dart';
-import 'package:brasil_fields/modelos/estados.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:olx/models/anuncio.dart';
+import 'package:olx/util/configuracoes.dart';
 import 'package:olx/views/widget/botao_customizado.dart';
 import 'package:olx/views/widget/input_costumizado.dart';
 import 'package:validadores/Validador.dart';
@@ -18,6 +20,7 @@ class NovoAnuncio extends StatefulWidget {
 
 class _NovoAnuncioState extends State<NovoAnuncio> {
   final _formKey = GlobalKey<FormState>();
+  BuildContext _dialogContext;
 
   Anuncio _anuncio;
 
@@ -42,57 +45,64 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
   @override
   void initState() {
     super.initState();
-    _anuncio = Anuncio();
+    _anuncio = Anuncio.gerarId();
     _carregarItensDropDown();
   }
 
   _carregarItensDropDown() async {
-    for (var estado in Estados.listaEstadosAbrv) {
-      _listaItensDropEstados.add(
-        DropdownMenuItem(
-          child: Text(estado),
-          value: estado,
-        ),
-      );
-    }
+    _listaItensDropEstados = Configuracoes.getEstados();
 
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text('Automovel'),
-        value: 'auto',
-      ),
-    );
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text('Imovel'),
-        value: 'imovel',
-      ),
-    );
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text('Moda'),
-        value: 'moda',
-      ),
-    );
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text('Eletronico'),
-        value: 'eletronico',
-      ),
-    );
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text('Sport'),
-        value: 'sport',
-      ),
-    );
+    _listaItensDropCategorias = Configuracoes.getCategorias();
   }
 
   void _salvarAnuncio() async {
+    _abrirDialog(_dialogContext);
     //Upload das imagens no Storage
-    _uploadImagens();
+    await _uploadImagens();
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    FirebaseUser usuarioLogado = await auth.currentUser();
+    String idUsuarioDoLogado = usuarioLogado.uid;
 
     //Salvar anuncio no Firestore
+    Firestore db = Firestore.instance;
+    db
+        .collection('meus_anuncios')
+        .document(idUsuarioDoLogado)
+        .collection('anuncios')
+        .document(_anuncio.id)
+        .setData(_anuncio.toMap())
+        .then((_) {
+      db
+          .collection('anuncios')
+          .document(_anuncio.id)
+          .setData(_anuncio.toMap())
+          .then((_) {
+        Navigator.pop(_dialogContext);
+
+        Navigator.pop(context);
+      });
+    });
+  }
+
+  _abrirDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(
+                  height: 20,
+                ),
+                Text('Salvando anuncio...'),
+              ],
+            ),
+          );
+        });
   }
 
   Future _uploadImagens() async {
@@ -391,6 +401,8 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                   texto: 'Novo Anuncio',
                   onPressed: () {
                     _formKey.currentState.validate();
+
+                    _dialogContext = context;
 
                     _formKey.currentState.save();
 
